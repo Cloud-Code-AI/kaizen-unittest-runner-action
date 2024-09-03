@@ -1,26 +1,39 @@
 FROM ubuntu:latest
 
-RUN apt-get update && apt-get install -y python3 python3-pip curl
+# Install necessary tools
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip curl
 
-# Copy files if they exist, create them if they don't
-COPY requirements.txt /requirements.txt || touch /requirements.txt
-COPY pyproject.toml /pyproject.toml || touch /pyproject.toml
-COPY package.json /package.json || touch /package.json
-COPY entrypoint.sh /entrypoint.sh
+# Create a directory for our files
+RUN mkdir /app
+WORKDIR /app
+
+# Copy files if they exist, otherwise create empty ones
+COPY requirements.txt pyproject.toml package.json ./
+RUN for file in requirements.txt pyproject.toml package.json; do \
+    if [ ! -f "$file" ]; then \
+        echo "Creating empty $file"; \
+        touch "$file"; \
+    fi \
+done
+
+# Copy entrypoint script
+COPY entrypoint.sh .
 
 # Install latest Node.js
-RUN curl -fsSL https://deb.nodesource.com/setup_current.x | bash -
-RUN apt-get install -y nodejs
+RUN curl -fsSL https://deb.nodesource.com/setup_current.x | bash - && \
+    apt-get install -y nodejs
 
-RUN pip3 install poetry
-RUN poetry config virtualenvs.create false
-RUN poetry install
-RUN pip3 install -r requirements.txt
+# Install Python dependencies
+RUN pip3 install poetry && \
+    poetry config virtualenvs.create false && \
+    poetry install && \
+    pip3 install -r requirements.txt
 
-# Only run npm install if package.json exists and has content
-RUN if [ -s /package.json ]; then npm install; fi
+# Install Node.js dependencies if package.json exists and has content
+RUN if [ -s package.json ]; then npm install; fi
 
 # Install kaizen-cli
 RUN pip3 install kaizen-cli
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
