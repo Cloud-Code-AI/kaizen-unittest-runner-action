@@ -1,0 +1,47 @@
+name: Test Kaizen Unit Test Runner Action
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test-python:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Create dummy Python test
+      run: |
+        mkdir -p .kaizen/unittests
+        echo "def test_dummy(): assert True" > .kaizen/unittests/test_dummy.py
+    - name: Run Kaizen Unit Test Runner Action
+      uses: ./
+      
+  test-javascript:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Create dummy JavaScript test
+      run: |
+        echo '{"scripts": {"test": "echo \"Dummy test passed\""}}' > package.json
+    - name: Run Kaizen Unit Test Runner Action
+      uses: ./
+      
+  test-react:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Create dummy React test
+      run: |
+        echo '{"scripts": {"test": "echo \"Dummy React test passed\"", "react-scripts": "4.0.3"}}' > package.json
+    - name: Run Kaizen Unit Test Runner Action
+      uses: ./
+
+  test-no-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run Kaizen Unit Test Runner Action
+      uses: ./

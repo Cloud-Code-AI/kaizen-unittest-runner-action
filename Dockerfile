@@ -27,8 +27,11 @@ RUN pip install --upgrade pip && \
     pip install poetry && \
     poetry config virtualenvs.create false
 
-# Install Node.js dependencies if package.json has content
-RUN if [ -s package.json ]; then npm install; fi
+# Generate package-lock.json if package.json exists and has content, then use npm ci
+RUN if [ -s package.json ]; then \
+        npm install --package-lock-only && \
+        npm ci; \
+    fi
 
 # Install kaizen-cli
 RUN pip install kaizen-cli
