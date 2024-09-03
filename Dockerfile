@@ -5,17 +5,10 @@ RUN apt-get update && \
     apt-get install -y python3 python3-pip curl
 
 # Create a directory for our files
-RUN mkdir /app
 WORKDIR /app
 
-# Copy files if they exist, otherwise create empty ones
-COPY requirements.txt pyproject.toml package.json ./
-RUN for file in requirements.txt pyproject.toml package.json; do \
-    if [ ! -f "$file" ]; then \
-        echo "Creating empty $file"; \
-        touch "$file"; \
-    fi \
-done
+# Create empty files (they will be overwritten if they exist in the context)
+RUN touch requirements.txt pyproject.toml package.json
 
 # Copy entrypoint script
 COPY entrypoint.sh .
@@ -26,14 +19,15 @@ RUN curl -fsSL https://deb.nodesource.com/setup_current.x | bash - && \
 
 # Install Python dependencies
 RUN pip3 install poetry && \
-    poetry config virtualenvs.create false && \
-    poetry install && \
-    pip3 install -r requirements.txt
+    poetry config virtualenvs.create false
 
-# Install Node.js dependencies if package.json exists and has content
+# Install Node.js dependencies if package.json has content
 RUN if [ -s package.json ]; then npm install; fi
 
 # Install kaizen-cli
 RUN pip3 install kaizen-cli
+
+# Ensure entrypoint script is executable
+RUN chmod +x /app/entrypoint.sh
 
 ENTRYPOINT ["./entrypoint.sh"]
