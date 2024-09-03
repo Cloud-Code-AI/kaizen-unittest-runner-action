@@ -13,6 +13,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Create a directory for our files
 WORKDIR /app
+RUN touch pyproject.toml requirements.txt package.json package-lock.json
 
 # Copy only dependency files first to leverage Docker cache
 COPY pyproject.toml requirements.txt package.json package-lock.json ./
