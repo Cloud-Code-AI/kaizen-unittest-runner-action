@@ -2,6 +2,9 @@
 
 set -e
 
+# Activate virtual environment
+source /opt/venv/bin/activate
+
 # Run Python tests using kaizen-cli
 echo "Running Python tests..."
 kaizen-cli run tests .kaizen/unittests

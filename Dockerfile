@@ -2,7 +2,7 @@ FROM ubuntu:latest
 
 # Install necessary tools
 RUN apt-get update && \
-    apt-get install -y python3 python3-pip curl
+    apt-get install -y python3 python3-pip python3-venv curl
 
 # Create a directory for our files
 WORKDIR /app
@@ -17,15 +17,21 @@ COPY entrypoint.sh .
 RUN curl -fsSL https://deb.nodesource.com/setup_current.x | bash - && \
     apt-get install -y nodejs
 
+# Set up a Python virtual environment
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
 # Install Python dependencies
-RUN pip3 install poetry && \
+RUN pip install --upgrade pip && \
+    pip install poetry && \
     poetry config virtualenvs.create false
 
 # Install Node.js dependencies if package.json has content
 RUN if [ -s package.json ]; then npm install; fi
 
 # Install kaizen-cli
-RUN pip3 install kaizen-cli
+RUN pip install kaizen-cli
 
 # Ensure entrypoint script is executable
 RUN chmod +x /app/entrypoint.sh
