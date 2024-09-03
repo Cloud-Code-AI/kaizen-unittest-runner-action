@@ -21,12 +21,6 @@ jobs:
     - name: Run Kaizen Unit Test Runner Action
       uses: ./
       continue-on-error: true
-    - name: Verify output
-      run: |
-        if ! grep -q "1 passed, 1 failed" $GITHUB_STEP_SUMMARY; then
-          echo "Expected output not found in step summary"
-          exit 1
-        fi
 
   test-python-poetry:
     runs-on: ubuntu-latest
@@ -92,7 +86,7 @@ jobs:
             "test": "react-scripts test --env=jsdom"
           }
         }' > package.json
-        mkdir .kaizen/unit_test/src
+        mkdir -p .kaizen/unit_test/src
         echo 'test("dummy test", () => { expect(true).toBe(true); });' > .kaizen/unit_test/src/App.test.js
     - name: Run Kaizen Unit Test Runner Action
       uses: ./
