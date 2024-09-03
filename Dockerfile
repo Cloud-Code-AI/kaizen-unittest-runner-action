@@ -10,8 +10,9 @@ WORKDIR /app
 # Create empty files (they will be overwritten if they exist in the context)
 RUN touch requirements.txt pyproject.toml package.json
 
-# Copy entrypoint script
+# Copy entrypoint script and set permissions
 COPY entrypoint.sh .
+RUN chmod +x /app/entrypoint.sh
 
 # Install latest Node.js
 RUN curl -fsSL https://deb.nodesource.com/setup_current.x | bash - && \
@@ -36,7 +37,4 @@ RUN if [ -s package.json ]; then \
 # Install kaizen-cli
 RUN pip install kaizen-cli
 
-# Ensure entrypoint script is executable
-RUN chmod +x /app/entrypoint.sh
-
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["/app/entrypoint.sh"]
