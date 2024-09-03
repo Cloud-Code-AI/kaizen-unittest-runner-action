@@ -8,40 +8,137 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-python:
+  test-python-pip:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Create dummy Python test
+    - uses: actions/checkout@v3
+    - name: Create Python test environment
       run: |
-        mkdir -p .kaizen/unittests
-        echo "def test_dummy(): assert True" > .kaizen/unittests/test_dummy.py
+        mkdir -p tests
+        echo "def test_success(): assert True" > tests/test_success.py
+        echo "def test_failure(): assert False" > tests/test_failure.py
+        echo "pytest==7.3.1" > requirements.txt
     - name: Run Kaizen Unit Test Runner Action
       uses: ./
-      
+      continue-on-error: true
+    - name: Verify output
+      run: |
+        if ! grep -q "1 passed, 1 failed" $GITHUB_STEP_SUMMARY; then
+          echo "Expected output not found in step summary"
+          exit 1
+        fi
+
+  test-python-poetry:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Create Python Poetry test environment
+      run: |
+        mkdir -p tests
+        echo "def test_poetry(): assert True" > tests/test_poetry.py
+        echo "[tool.poetry]
+        name = \"test-project\"
+        version = \"0.1.0\"
+        description = \"\"
+        authors = [\"Test Author <test@example.com>\"]
+
+        [tool.poetry.dependencies]
+        python = \"^3.9\"
+        pytest = \"^7.3.1\"
+
+        [build-system]
+        requires = [\"poetry-core\"]
+        build-backend = \"poetry.core.masonry.api\"" > pyproject.toml
+    - name: Run Kaizen Unit Test Runner Action
+      uses: ./
+    - name: Verify output
+      run: |
+        if ! grep -q "1 passed" $GITHUB_STEP_SUMMARY; then
+          echo "Expected output not found in step summary"
+          exit 1
+        fi
+
   test-javascript:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Create dummy JavaScript test
+    - uses: actions/checkout@v3
+    - name: Create JavaScript test environment
       run: |
-        echo '{"scripts": {"test": "echo \"Dummy test passed\""}}' > package.json
+        echo '{
+          "name": "test-project",
+          "version": "1.0.0",
+          "scripts": {
+            "test": "jest"
+          },
+          "devDependencies": {
+            "jest": "^29.5.0"
+          }
+        }' > package.json
+        echo 'module.exports = { testEnvironment: "node" };' > jest.config.js
+        echo 'test("sample test", () => { expect(true).toBe(true); });' > test.js
     - name: Run Kaizen Unit Test Runner Action
       uses: ./
-      
+    - name: Verify output
+      run: |
+        if ! grep -q "PASS ./test.js" $GITHUB_STEP_SUMMARY; then
+          echo "Expected output not found in step summary"
+          exit 1
+        fi
+
   test-react:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Create dummy React test
+    - uses: actions/checkout@v3
+    - name: Create React test environment
       run: |
-        echo '{"scripts": {"test": "echo \"Dummy React test passed\"", "react-scripts": "4.0.3"}}' > package.json
+        echo '{
+          "name": "test-react-app",
+          "version": "0.1.0",
+          "private": true,
+          "dependencies": {
+            "react": "^18.2.0",
+            "react-dom": "^18.2.0",
+            "react-scripts": "5.0.1"
+          },
+          "scripts": {
+            "test": "react-scripts test --env=jsdom"
+          }
+        }' > package.json
+        mkdir src
+        echo 'test("dummy test", () => { expect(true).toBe(true); });' > src/App.test.js
     - name: Run Kaizen Unit Test Runner Action
       uses: ./
+    - name: Verify output
+      run: |
+        if ! grep -q "PASS src/App.test.js" $GITHUB_STEP_SUMMARY; then
+          echo "Expected output not found in step summary"
+          exit 1
+        fi
 
   test-no-tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Run Kaizen Unit Test Runner Action
       uses: ./
+    - name: Verify output
+      run: |
+        if ! grep -q "No tests found" $GITHUB_STEP_SUMMARY; then
+          echo "Expected output not found in step summary"
+          exit 1
+        fi
+
+  test-custom-command:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Kaizen Unit Test Runner Action with custom command
+      uses: ./
+      with:
+        test_command: 'echo "Custom test command executed"'
+    - name: Verify output
+      run: |
+        if ! grep -q "Custom test command executed" $GITHUB_STEP_SUMMARY; then
+          echo "Expected output not found in step summary"
+          exit 1
+        fi
