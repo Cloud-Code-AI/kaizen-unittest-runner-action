@@ -13,10 +13,11 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Create a directory for our files
 WORKDIR /app
-RUN touch pyproject.toml requirements.txt package.json package-lock.json
-
-# Copy only dependency files first to leverage Docker cache
-COPY pyproject.toml requirements.txt package.json package-lock.json ./
+# Conditionally copy files if they exist
+RUN if [ -f pyproject.toml ]; then cp pyproject.toml /app/; fi
+RUN if [ -f requirements.txt ]; then cp requirements.txt /app/; fi
+RUN if [ -f package.json ]; then cp package.json /app/; fi
+RUN if [ -f package-lock.json ]; then cp package-lock.json /app/; fi
 
 # Install dependencies
 RUN pip install --upgrade pip && \
