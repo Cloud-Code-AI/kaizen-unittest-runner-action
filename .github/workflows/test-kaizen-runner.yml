@@ -14,7 +14,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: Create Python test environment
       run: |
-        mkdir -p tests
+        mkdir -p .kaizen/unit_test/tests
         echo "def test_success(): assert True" > .kaizen/unit_test/tests/test_success.py
         echo "def test_failure(): assert False" > .kaizen/unit_test/tests/test_failure.py
         echo "pytest==7.3.1" > requirements.txt
@@ -34,7 +34,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: Create Python Poetry test environment
       run: |
-        mkdir -p tests
+        mkdir -p .kaizen/unit_test/tests
         echo "def test_poetry(): assert True" > .kaizen/unit_test/tests/test_poetry.py
         echo "[tool.poetry]
         name = \"test-project\"
@@ -92,7 +92,7 @@ jobs:
             "test": "react-scripts test --env=jsdom"
           }
         }' > package.json
-        mkdir src
+        mkdir .kaizen/unit_test/src
         echo 'test("dummy test", () => { expect(true).toBe(true); });' > .kaizen/unit_test/src/App.test.js
     - name: Run Kaizen Unit Test Runner Action
       uses: ./
