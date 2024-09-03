@@ -23,20 +23,17 @@ ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# Install Python dependencies
 RUN if [ -s pyproject.toml ]; then \
         pip install --upgrade pip && \
         pip install poetry && \
-        poetry config virtualenvs.create false \
+        poetry config virtualenvs.create false; \
     fi
 
-# Install Python dependencies
 RUN if [ -s requirements.txt ]; then \
         pip install --upgrade pip && \
-        pip install -r requirements.txt \
+        pip install -r requirements.txt; \
     fi
 
-# Generate package-lock.json if package.json exists and has content, then use npm ci
 RUN if [ -s package.json ]; then \
         npm install --package-lock-only && \
         npm ci; \
